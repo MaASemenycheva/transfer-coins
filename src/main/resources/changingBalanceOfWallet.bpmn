@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0dguu7v" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:process id="app-process" name="Перевод средств с кошелька на кошелёк" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1d3sonp</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Event_05ux65j">
+      <bpmn:incoming>Flow_01thhr7</bpmn:incoming>
+      <bpmn:incoming>Flow_1pk5g1l</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Activity_0ahhtre" name="Изменение баланса кошельков" camunda:delegateExpression="${сhangingBalanceOfWallet}">
+      <bpmn:incoming>Flow_1d3sonp</bpmn:incoming>
+      <bpmn:incoming>Flow_1uv4o2p</bpmn:incoming>
+      <bpmn:outgoing>Flow_1q3ygh8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1d3sonp" sourceRef="StartEvent_1" targetRef="Activity_0ahhtre" />
+    <bpmn:sequenceFlow id="Flow_1q3ygh8" sourceRef="Activity_0ahhtre" targetRef="Gateway_1wwms0j" />
+    <bpmn:exclusiveGateway id="Gateway_1wwms0j" name="Перевод произведён?">
+      <bpmn:incoming>Flow_1q3ygh8</bpmn:incoming>
+      <bpmn:outgoing>Flow_141xidu</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0jf8hnf</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_141xidu" sourceRef="Gateway_1wwms0j" targetRef="Activity_10blk1d">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isTransfer}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0jf8hnf" sourceRef="Gateway_1wwms0j" targetRef="Activity_10jenlm">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!isTransfer}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_10blk1d" name="Произведён перевод">
+      <bpmn:incoming>Flow_141xidu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1pk5g1l</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_10jenlm" name="Перевод не произведён">
+      <bpmn:incoming>Flow_0jf8hnf</bpmn:incoming>
+      <bpmn:outgoing>Flow_01thhr7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1pk5g1l" sourceRef="Activity_10blk1d" targetRef="Event_05ux65j" />
+    <bpmn:boundaryEvent id="Event_1cuxbgk" attachedToRef="Activity_0ahhtre">
+      <bpmn:outgoing>Flow_18tvn87</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1gb650u" errorRef="Error_1uvhl2e" />
+    </bpmn:boundaryEvent>
+    <bpmn:userTask id="Activity_0nquo9x" name="Подготовка к переводу">
+      <bpmn:incoming>Flow_18tvn87</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uv4o2p</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_18tvn87" sourceRef="Event_1cuxbgk" targetRef="Activity_0nquo9x" />
+    <bpmn:sequenceFlow id="Flow_1uv4o2p" sourceRef="Activity_0nquo9x" targetRef="Activity_0ahhtre" />
+    <bpmn:sequenceFlow id="Flow_01thhr7" sourceRef="Activity_10jenlm" targetRef="Event_05ux65j" />
+    <bpmn:receiveTask id="MessageTask" name="Формирование уведомления об изменении баланса" messageRef="Message_1i2oa0n">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${controlTimeListenerStart}" event="start" />
+        <camunda:executionListener delegateExpression="${controlTimeListenerEnd}" event="end" />
+      </bpmn:extensionElements>
+    </bpmn:receiveTask>
+  </bpmn:process>
+  <bpmn:error id="Error_1uvhl2e" name="transferError" errorCode="transferError" />
+  <bpmn:message id="Message_1i2oa0n" name="MessageToControl" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="app-process">
+      <bpmndi:BPMNEdge id="Flow_1pk5g1l_di" bpmnElement="Flow_1pk5g1l">
+        <di:waypoint x="700" y="120" />
+        <di:waypoint x="1042" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="826" y="102" width="90" height="20" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jf8hnf_di" bpmnElement="Flow_0jf8hnf">
+        <di:waypoint x="470" y="202" />
+        <di:waypoint x="470" y="250" />
+        <di:waypoint x="600" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_141xidu_di" bpmnElement="Flow_141xidu">
+        <di:waypoint x="470" y="152" />
+        <di:waypoint x="470" y="120" />
+        <di:waypoint x="600" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1q3ygh8_di" bpmnElement="Flow_1q3ygh8">
+        <di:waypoint x="370" y="177" />
+        <di:waypoint x="445" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1d3sonp_di" bpmnElement="Flow_1d3sonp">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="270" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18tvn87_di" bpmnElement="Flow_18tvn87">
+        <di:waypoint x="320" y="235" />
+        <di:waypoint x="320" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uv4o2p_di" bpmnElement="Flow_1uv4o2p">
+        <di:waypoint x="270" y="330" />
+        <di:waypoint x="220" y="330" />
+        <di:waypoint x="220" y="260" />
+        <di:waypoint x="270" y="201" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01thhr7_di" bpmnElement="Flow_01thhr7">
+        <di:waypoint x="700" y="250" />
+        <di:waypoint x="1060" y="250" />
+        <di:waypoint x="1060" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07fo656_di" bpmnElement="Activity_0ahhtre">
+        <dc:Bounds x="270" y="137" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1wwms0j_di" bpmnElement="Gateway_1wwms0j" isMarkerVisible="true">
+        <dc:Bounds x="445" y="152" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="505" y="163" width="66" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mkohe9_di" bpmnElement="Activity_10blk1d">
+        <dc:Bounds x="600" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1k6iizn_di" bpmnElement="Activity_10jenlm">
+        <dc:Bounds x="600" y="210" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0aob74s_di" bpmnElement="Activity_0nquo9x">
+        <dc:Bounds x="270" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_05ux65j_di" bpmnElement="Event_05ux65j">
+        <dc:Bounds x="1042" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ut0fvd_di" bpmnElement="MessageTask">
+        <dc:Bounds x="830" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1e2gxfz_di" bpmnElement="Event_1cuxbgk">
+        <dc:Bounds x="302" y="199" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
